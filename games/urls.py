@@ -6,8 +6,11 @@ app_name = 'games'
 urlpatterns = [
     path('', home_view, name='home'),
     path('contact/', contact_view, name='contact'),
-    path('math-facts/', MathFactsView.as_view(), name='math-facts'),
-    path('anagram-hunt/', AnagramHuntView.as_view(), name='anagram-hunt'),
+    # Game pages: support both with and without trailing slash
+    path('math-facts', MathFactsView.as_view(), name='math-facts'),
+    path('math-facts/', MathFactsView.as_view(), name='math-facts-slash'),
+    path('anagram-hunt', AnagramHuntView.as_view(), name='anagram-hunt'),
+    path('anagram-hunt/', AnagramHuntView.as_view(), name='anagram-hunt-slash'),
     # API to record results
     path('api/games/results/', record_result, name='record-result'),
     # History and leaderboards

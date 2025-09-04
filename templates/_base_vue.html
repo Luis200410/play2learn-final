@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-{% load static %}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{% endblock %}</title>
+{% load static %}
 <!-- Bootstrap CSS CDN-->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<!-- Built Vue CSS -->
 <link href="{% static 'dist/css/chunk-vendors.css' %}" rel="stylesheet">
 <link href="{% static 'dist/css/app.css' %}" rel="stylesheet">
-<script defer src="{% static 'dist/js/chunk-vendors.js' %}"></script><script defer src="{% static 'dist/js/app.js' %}"></script></head>
+<!-- Built Vue JS -->
+<script defer src="{% static 'dist/js/chunk-vendors.js' %}"></script>
+<script defer src="{% static 'dist/js/app.js' %}"></script>
+</head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
     <div class="container">
@@ -55,6 +59,7 @@
       </div>
     </div>
   </nav>
+
   {% block main %}{% endblock %}
   <!-- Ensure CSRF cookie is set for axios -->
   <form style="display:none">{% csrf_token %}</form>
