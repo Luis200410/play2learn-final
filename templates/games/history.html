@@ -1,0 +1,33 @@
+{% extends "_base_vue.html" %}
+{% block title %}My Game History{% endblock %}
+{% block main %}
+<div class="container py-5">
+  <h1 class="mb-4">My Game History</h1>
+  {% if results %}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th scope="col">Finished</th>
+          <th scope="col">Game</th>
+          <th scope="col">Settings</th>
+          <th scope="col">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in results %}
+        <tr>
+          <td>{{ r.finished_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ r.get_game_type_display }}</td>
+          <td><pre class="mb-0" style="white-space: pre-wrap">{{ r.settings }}</pre></td>
+          <td><strong>{{ r.score }}</strong></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p>No games played yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -160,8 +160,19 @@ export default {
       }
     },
     async recordScore() {
-      // TODO: when Math Facts finishes, make an Ajax call with axios (this.axios)
-      // to record the score on the backend
+      try {
+        await this.axios.post('/api/games/results/', {
+          game_type: 'math_facts',
+          score: this.score,
+          settings: {
+            operation: this.operation,
+            max_number: this.maxNumber,
+          }
+        });
+      } catch (e) {
+        // swallow errors for now; could show toast
+        console.error('Failed to record score', e);
+      }
     }
   },
   computed: {
