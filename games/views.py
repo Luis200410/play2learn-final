@@ -16,9 +16,45 @@ from .forms import ReviewForm, ContactForm
 class MathFactsView(TemplateView):
     template_name = "math-facts.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Leaderboard for all users
+        context["leaderboard"] = (
+            GameResult.objects.filter(game_type=GameResult.GameType.MATH_FACTS)
+            .select_related("user")
+            .order_by("-score", "finished_at")[:20]
+        )
+        # Per-user history
+        if self.request.user.is_authenticated:
+            context["history"] = (
+                GameResult.objects.filter(user=self.request.user, game_type=GameResult.GameType.MATH_FACTS)
+                .order_by("-finished_at")[:50]
+            )
+        else:
+            context["history"] = []
+        return context
+
 
 class AnagramHuntView(TemplateView):
     template_name = "anagram-hunt.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Leaderboard for all users
+        context["leaderboard"] = (
+            GameResult.objects.filter(game_type=GameResult.GameType.ANAGRAM_HUNT)
+            .select_related("user")
+            .order_by("-score", "finished_at")[:20]
+        )
+        # Per-user history
+        if self.request.user.is_authenticated:
+            context["history"] = (
+                GameResult.objects.filter(user=self.request.user, game_type=GameResult.GameType.ANAGRAM_HUNT)
+                .order_by("-finished_at")[:50]
+            )
+        else:
+            context["history"] = []
+        return context
 
 
 @require_POST

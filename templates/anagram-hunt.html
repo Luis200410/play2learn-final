@@ -3,5 +3,67 @@
 {% block title %}Anagram Hunt{% endblock %}
 {% block main %}
   <h1>Anagram Hunt</h1>
+  <div class="mt-3">
+    <ul class="nav nav-pills mb-3" id="ah-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="ah-leaderboard-tab" data-bs-toggle="pill" data-bs-target="#ah-leaderboard" type="button" role="tab">Leaderboard</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="ah-history-tab" data-bs-toggle="pill" data-bs-target="#ah-history" type="button" role="tab">My History</button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="ah-leaderboard" role="tabpanel">
+        {% if leaderboard %}
+        <div class="table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead>
+              <tr><th>Rank</th><th>User</th><th>Finished</th><th>Settings</th><th>Score</th></tr>
+            </thead>
+            <tbody>
+              {% for r in leaderboard %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{% if r.user %}{{ r.user.username }}{% else %}Anonymous{% endif %}</td>
+                <td>{{ r.finished_at|date:"Y-m-d H:i" }}</td>
+                <td>word length {{ r.settings.word_length }}</td>
+                <td><strong>{{ r.score }}</strong></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <p class="text-muted">No scores yet.</p>
+        {% endif %}
+      </div>
+      <div class="tab-pane fade" id="ah-history" role="tabpanel">
+        {% if request.user.is_authenticated %}
+          {% if history %}
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+              <thead>
+                <tr><th>Finished</th><th>Settings</th><th>Score</th></tr>
+              </thead>
+              <tbody>
+                {% for r in history %}
+                <tr>
+                  <td>{{ r.finished_at|date:"Y-m-d H:i" }}</td>
+                  <td>word length {{ r.settings.word_length }}</td>
+                  <td><strong>{{ r.score }}</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <p class="text-muted">You have no game history yet.</p>
+          {% endif %}
+        {% else %}
+          <p><a href="{% url 'accounts:login' %}">Log in</a> to see your history.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
   {{ block.super }}
-{% endblock %} 
+{% endblock %}
