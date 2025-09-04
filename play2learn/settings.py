@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # local apps
-    "games.apps.GamesConfig"
+    "games.apps.GamesConfig",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -128,3 +129,8 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Authentication redirects
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "accounts:account"
+LOGOUT_REDIRECT_URL = "accounts:login"
