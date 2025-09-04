@@ -132,7 +132,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Authentication redirects
 LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "accounts:account"
+LOGIN_REDIRECT_URL = "games:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
 
 # Email (dev): print emails to console. Configure real SMTP in prod.
