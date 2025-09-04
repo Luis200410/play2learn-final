@@ -1,0 +1,77 @@
+{% extends "_base_vue.html" %}
+{% block title %}Play2Learn{% endblock %}
+{% block main %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h3">Welcome to Play2Learn</h1>
+      <p class="text-muted">Sharpen your skills with Math Facts and Anagram Hunt.</p>
+    </div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col">
+      <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% if reviews %}
+            {% for r in reviews %}
+            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <blockquote class="blockquote mb-0">
+                    <p class="mb-2">{{ r.content }}</p>
+                    <footer class="blockquote-footer">
+                      {{ r.user.username }} on {{ r.created_at|date:"Y-m-d" }}
+                    </footer>
+                  </blockquote>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="carousel-item active">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <p class="mb-0">No reviews yet. Be the first to leave one!</p>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {% if form %}
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header">Leave a Review</div>
+        <div class="card-body">
+          <form method="post" class="">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit">Submit Review</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row">
+    <div class="col">
+      <p><a href="{% url 'accounts:login' %}">Log in</a> to leave a review.</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

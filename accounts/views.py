@@ -1,7 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.urls import reverse
 
 from .forms import RegisterForm, AccountUpdateForm
 
@@ -33,3 +34,9 @@ def account(request):
 
     return render(request, "accounts/account.html", {"form": form})
 
+
+def logout_view(request):
+    # Log out and return the user to the previous page (or home)
+    next_url = request.GET.get("next") or request.META.get("HTTP_REFERER") or reverse("games:home")
+    logout(request)
+    return redirect(next_url)

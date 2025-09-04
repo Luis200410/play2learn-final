@@ -8,6 +8,60 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <script defer src="http://localhost:8080/js/chunk-vendors.js"></script><script defer src="http://localhost:8080/js/app.js"></script></head>
 <body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'games:home' %}">Play2Learn</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'games:home' %}">Home</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Games</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'games:math-facts' %}">Math Facts</a></li>
+              <li><a class="dropdown-item" href="{% url 'games:anagram-hunt' %}">Anagram Hunt</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Leaderboards</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'games:leaderboard' 'math_facts' %}">Math Facts</a></li>
+              <li><a class="dropdown-item" href="{% url 'games:leaderboard' 'anagram_hunt' %}">Anagram Hunt</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'games:history' %}">My History</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'games:contact' %}">Contact</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav">
+          {% if request.user.is_authenticated %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">{{ request.user.username }}</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% if request.user.is_superuser %}
+                  <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                {% endif %}
+                <li><a class="dropdown-item" href="{% url 'accounts:account' %}">My Account</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}?next={{ request.get_full_path|urlencode }}">Logout</a></li>
+              </ul>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:register' %}">Register</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
   {% block main %}{% endblock %}
   <!-- Ensure CSRF cookie is set for axios -->
   <form style="display:none">{% csrf_token %}</form>

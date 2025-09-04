@@ -1,0 +1,18 @@
+{% extends "_base_vue.html" %}
+{% block title %}Contact Us{% endblock %}
+{% block main %}
+<div class="container py-5" style="max-width: 720px;">
+  <h1 class="mb-4">Contact Us</h1>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success" role="alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Send Message</button>
+  </form>
+</div>
+{% endblock %}
+

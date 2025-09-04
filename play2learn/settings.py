@@ -134,3 +134,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:account"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+# Email (dev): print emails to console. Configure real SMTP in prod.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@play2learn.local"

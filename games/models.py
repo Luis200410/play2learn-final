@@ -20,4 +20,17 @@ class GameResult(models.Model):
         username = self.user.username if self.user else "Anonymous"
         return f"{username} - {self.get_game_type_display()} - {self.score}"
 
+
+class Review(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="reviews")
+    content = models.TextField(max_length=1000)
+    featured = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Review by {self.user.username} on {self.created_at:%Y-%m-%d}"
+
 # Create your models here.
