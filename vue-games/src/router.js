@@ -5,14 +5,12 @@ import MathFacts from "./apps/MathFacts";
 
 const routes = [
   {
-    path: '/anagram-hunt/',
-    component: AnagramHunt,
-    alias: ['/anagram-hunt']
+    path: '/anagram-hunt',
+    component: AnagramHunt
   },
   {
-    path: '/math-facts/',
-    component: MathFacts,
-    alias: ['/math-facts']
+    path: '/math-facts',
+    component: MathFacts
   },
 ];
 

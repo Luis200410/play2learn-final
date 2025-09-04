@@ -127,17 +127,8 @@ export default {
       this.correctGuesses = [];
     },
     async recordScore() {
-      try {
-        await this.axios.post('/api/games/results/', {
-          game_type: 'anagram_hunt',
-          score: this.score,
-          settings: {
-            word_length: this.wordLength,
-          }
-        });
-      } catch (e) {
-        console.error('Failed to record score', e);
-      }
+      // TODO: when Anagram Hunt finishes, make an Ajax call with axios (this.axios)
+      // to record the score on the backend
     }
   },
   watch: {

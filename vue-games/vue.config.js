@@ -3,15 +3,15 @@
 //   transpileDependencies: true
 // })
 module.exports = {
-  // In production we serve built files from Django static
-  publicPath: '/static/dist/',
-  outputDir: '../static/dist',
-  filenameHashing: false, // ensure stable filenames: app.js, chunk-vendors.js, css files
+  publicPath: 'http://localhost:8080', // The base URL where your app will be deployed 
+  outputDir: '../static/dist', // The path for where files will be output when the app is built
+  indexPath: '../../templates/_base_vue.html', // The path for the generated index file
 
-  // Keep dev server behavior for local development if used
   configureWebpack: {
     devServer: {
-      devMiddleware: { writeToDisk: true }
+      devMiddleware: {
+        writeToDisk: true
+      }
     }
   }
 };
