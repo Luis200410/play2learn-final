@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.generic import TemplateView, ListView
 
 from .models import GameResult, Review
@@ -22,13 +22,13 @@ class MathFactsView(TemplateView):
         context["leaderboard"] = (
             GameResult.objects.filter(game_type=GameResult.GameType.MATH_FACTS)
             .select_related("user")
-            .order_by("-score", "finished_at")[:20]
+            .order_by("-score", "finished_at")[:10]
         )
         # Per-user history
         if self.request.user.is_authenticated:
             context["history"] = (
                 GameResult.objects.filter(user=self.request.user, game_type=GameResult.GameType.MATH_FACTS)
-                .order_by("-finished_at")[:50]
+                .order_by("-finished_at")[:10]
             )
         else:
             context["history"] = []
@@ -44,13 +44,13 @@ class AnagramHuntView(TemplateView):
         context["leaderboard"] = (
             GameResult.objects.filter(game_type=GameResult.GameType.ANAGRAM_HUNT)
             .select_related("user")
-            .order_by("-score", "finished_at")[:20]
+            .order_by("-score", "finished_at")[:10]
         )
         # Per-user history
         if self.request.user.is_authenticated:
             context["history"] = (
                 GameResult.objects.filter(user=self.request.user, game_type=GameResult.GameType.ANAGRAM_HUNT)
-                .order_by("-finished_at")[:50]
+                .order_by("-finished_at")[:10]
             )
         else:
             context["history"] = []
@@ -58,7 +58,7 @@ class AnagramHuntView(TemplateView):
 
 
 @require_POST
-@csrf_protect
+@csrf_exempt
 def record_result(request):
     try:
         data = json.loads(request.body.decode("utf-8")) if request.body else request.POST
@@ -152,3 +152,58 @@ def contact_view(request):
         form = ContactForm()
 
     return render(request, "contact.html", {"form": form})
+
+
+# Lightweight JSON APIs used by in-page tables
+@require_GET
+@login_required
+def history_api(request, game_type):
+    if game_type not in dict(GameResult.GameType.choices):
+        return HttpResponseBadRequest("Invalid game_type")
+    try:
+        limit = int(request.GET.get("limit", 10))
+        offset = int(request.GET.get("offset", 0))
+    except ValueError:
+        return HttpResponseBadRequest("Invalid limit/offset")
+    qs = (
+        GameResult.objects
+        .filter(user=request.user, game_type=game_type)
+        .order_by("-finished_at")[offset:offset+limit]
+    )
+    data = [
+        {
+            "finished_at": r.finished_at.isoformat(),
+            "game_type": r.game_type,
+            "score": r.score,
+            "settings": r.settings,
+        }
+        for r in qs
+    ]
+    return JsonResponse({"results": data})
+
+
+@require_GET
+def leaderboard_api(request, game_type):
+    if game_type not in dict(GameResult.GameType.choices):
+        return HttpResponseBadRequest("Invalid game_type")
+    try:
+        limit = int(request.GET.get("limit", 10))
+    except ValueError:
+        return HttpResponseBadRequest("Invalid limit")
+    qs = (
+        GameResult.objects
+        .filter(game_type=game_type)
+        .select_related("user")
+        .order_by("-score", "finished_at")[:limit]
+    )
+    data = [
+        {
+            "finished_at": r.finished_at.isoformat(),
+            "username": r.user.username if r.user else "Anonymous",
+            "game_type": r.game_type,
+            "score": r.score,
+            "settings": r.settings,
+        }
+        for r in qs
+    ]
+    return JsonResponse({"results": data})

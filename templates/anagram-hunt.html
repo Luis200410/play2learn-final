@@ -22,13 +22,12 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane fade show active" id="ah-leaderboard" role="tabpanel">
-        {% if leaderboard %}
         <div class="table-responsive">
           <table class="table table-sm table-striped align-middle">
             <thead>
               <tr><th>Rank</th><th>User</th><th>Finished</th><th>Settings</th><th>Score</th></tr>
             </thead>
-            <tbody>
+            <tbody id="ah-leaderboard-body">
               {% for r in leaderboard %}
               <tr>
                 <td>{{ forloop.counter }}</td>
@@ -41,22 +40,22 @@
             </tbody>
           </table>
         </div>
-        {% else %}
-          <p class="text-muted">No scores yet.</p>
+        {% if not leaderboard %}
+          <p id="ah-leaderboard-empty" class="text-muted">No scores yet.</p>
         {% endif %}
       </div>
       <div class="tab-pane fade" id="ah-history" role="tabpanel">
         {% if request.user.is_authenticated %}
-          {% if history %}
           <div class="table-responsive">
             <table class="table table-sm table-striped align-middle">
               <thead>
-                <tr><th>Finished</th><th>Settings</th><th>Score</th></tr>
+                <tr><th>Finished</th><th>Game</th><th>Settings</th><th>Score</th></tr>
               </thead>
-              <tbody>
+              <tbody id="ah-history-body">
                 {% for r in history %}
                 <tr>
                   <td>{{ r.finished_at|date:"Y-m-d H:i" }}</td>
+                  <td>{{ r.get_game_type_display }}</td>
                   <td>word length {{ r.settings.word_length }}</td>
                   <td><strong>{{ r.score }}</strong></td>
                 </tr>
@@ -64,8 +63,11 @@
               </tbody>
             </table>
           </div>
-          {% else %}
-            <p class="text-muted">You have no game history yet.</p>
+          <div class="mt-2">
+            <button id="ah-history-more" class="btn btn-outline-secondary btn-sm" type="button">Load more</button>
+          </div>
+          {% if not history %}
+            <p id="ah-history-empty" class="text-muted">You have no game history yet.</p>
           {% endif %}
         {% else %}
           <p><a href="{% url 'accounts:login' %}">Log in</a> to see your history.</p>
@@ -75,3 +77,99 @@
   </div>
   {{ block.super }}
 {% endblock %}
+
+<script>
+  (function() {
+    const isAuth = {{ request.user.is_authenticated|yesno:'true,false' }};
+    function fmt(d){ try { return new Date(d).toLocaleString(); } catch(e){ return d; } }
+
+    async function refreshLeaderboard(){
+      try {
+        const res = await fetch('/api/games/leaderboard/anagram_hunt/');
+        const data = await res.json();
+        const tbody = document.getElementById('ah-leaderboard-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        data.results.forEach((r, idx) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${idx+1}</td><td>${r.username}</td><td>${fmt(r.finished_at)}</td><td>word length ${(r.settings||{}).word_length || ''}</td><td><strong>${r.score}</strong></td>`;
+          tbody.appendChild(tr);
+        });
+        const emptyP = document.getElementById('ah-leaderboard-empty');
+        if (emptyP) emptyP.style.display = data.results.length ? 'none' : '';
+      } catch(e) { /* ignore */ }
+    }
+
+    let historyOffset = 0;
+    const historyLimit = 10;
+    async function refreshHistory(){
+      if (!isAuth) return;
+      try {
+        const res = await fetch(`/api/games/history/anagram_hunt/?limit=${historyLimit}&offset=0`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('ah-history-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        data.results.forEach((r) => {
+          const tr = document.createElement('tr');
+          const gameLabel = r.game_type === 'anagram_hunt' ? 'Anagram Hunt' : (r.game_type === 'math_facts' ? 'Math Facts Practice' : r.game_type);
+          tr.innerHTML = `<td>${fmt(r.finished_at)}</td><td>${gameLabel}</td><td>word length ${(r.settings||{}).word_length || ''}</td><td><strong>${r.score}</strong></td>`;
+          tbody.appendChild(tr);
+        });
+        const emptyP = document.getElementById('ah-history-empty');
+        if (emptyP) emptyP.style.display = data.results.length ? 'none' : '';
+        historyOffset = data.results.length;
+      } catch(e) { /* ignore */ }
+    }
+
+    async function loadMoreHistory(){
+      if (!isAuth) return;
+      try {
+        const res = await fetch(`/api/games/history/anagram_hunt/?limit=${historyLimit}&offset=${historyOffset}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('ah-history-body');
+        if (!tbody) return;
+        data.results.forEach((r) => {
+          const tr = document.createElement('tr');
+          const gameLabel = r.game_type === 'anagram_hunt' ? 'Anagram Hunt' : (r.game_type === 'math_facts' ? 'Math Facts Practice' : r.game_type);
+          tr.innerHTML = `<td>${fmt(r.finished_at)}</td><td>${gameLabel}</td><td>word length ${(r.settings||{}).word_length || ''}</td><td><strong>${r.score}</strong></td>`;
+          tbody.appendChild(tr);
+        });
+        historyOffset += data.results.length;
+      } catch(e){ /* ignore */ }
+    }
+
+    const moreBtn = document.getElementById('ah-history-more');
+    if (moreBtn) moreBtn.addEventListener('click', loadMoreHistory);
+
+    refreshLeaderboard();
+    refreshHistory();
+    setInterval(() => { refreshLeaderboard(); refreshHistory(); }, 15000);
+
+    // Intercept XHR POST to results endpoint to refresh immediately on save
+    try {
+      const OldXHR = window.XMLHttpRequest;
+      function NewXHR(){
+        const realXhr = new OldXHR();
+        const origOpen = realXhr.open;
+        realXhr._method = '';
+        realXhr._url = '';
+        realXhr.open = function(method, url){
+          realXhr._method = (method || '').toUpperCase();
+          realXhr._url = url || '';
+          return origOpen.apply(realXhr, arguments);
+        };
+        realXhr.addEventListener('loadend', function(){
+          if (realXhr._method === 'POST' && realXhr._url.indexOf('/api/games/results/') !== -1 && realXhr.status >= 200 && realXhr.status < 300){
+            refreshHistory();
+            refreshLeaderboard();
+          }
+        });
+        return realXhr;
+      }
+      window.XMLHttpRequest = NewXHR;
+    } catch(e) { /* ignore */ }
+  })();
+</script>
